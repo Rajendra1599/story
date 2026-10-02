@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microdrama-video-worker
+  namespace: default
+  labels:
+    app: microdrama-video-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: microdrama-video-worker
+  template:
+    metadata:
+      labels:
+        app: microdrama-video-worker
+    spec:
+      containers:
+        - name: worker
+          image: microdrama/backend:v2.0.0
+          command: ["node", "src/workers/videoWorker.js"]
+          envFrom:
+            - configMapRef:
+                name: microdrama-config
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 2048Mi

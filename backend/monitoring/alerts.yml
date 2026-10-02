@@ -1,0 +1,28 @@
+groups:
+  - name: microdrama_alerts
+    rules:
+      - alert: ApiHighLatency
+        expr: histogram_quantile(0.95, sum(rate(microdrama_http_request_duration_seconds_bucket[5m])) by (le)) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MicroDrama API p95 latency exceeds 500ms"
+          description: "High API response latency detected across backend cluster."
+
+      - alert: ApiHighErrorRate
+        expr: sum(rate(microdrama_http_requests_total{status_code=~"5.."}[5m])) / sum(rate(microdrama_http_requests_total[5m])) > 0.01
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MicroDrama API 5xx error rate above 1%"
+          description: "Server errors detected in HTTP traffic."
+
+      - alert: PodMemoryThreshold
+        expr: process_resident_memory_bytes{job="microdrama-backend-cluster"} > 450000000
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Node.js process RSS memory approaching 500MB limit"
